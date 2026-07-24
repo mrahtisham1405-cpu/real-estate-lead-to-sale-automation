@@ -1,0 +1,272 @@
+{
+  "name": "Real Estate CRM - Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "90bb94ae-215b-4870-a2d2-c7ac2592f82d",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "ahtishamdaula4@gmail.com",
+        "subject": "🚨 Real Estate CRM - Workflow Failed",
+        "message": "=<h2>🚨 Workflow Error Alert</h2>  <p><strong>Workflow:</strong> {{$json.workflow.name}}</p>  <p><strong>Execution ID:</strong> {{$json.execution.id}}</p>  <p><strong>Failed Node:</strong> {{ $json.execution.lastNodeExecuted }}</p>  <p><strong>Error Message:</strong></p>  <pre>{{ $json.execution.error.message }}</pre>  <hr>  <p>Please check the workflow execution in n8n.</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "4ee90c13-a864-45d0-a970-3704826b8e0b",
+      "name": "Send a message",
+      "webhookId": "ee4abd95-cba1-47b9-a182-00f116e1af58",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ty59bJCHvegXmR6D",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI",
+          "mode": "list",
+          "cachedResultName": "Real Estate CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2064324232,
+          "mode": "list",
+          "cachedResultName": "error handle",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI/edit#gid=2064324232"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Time": "={{$now}}",
+            "Workflow": "={{$json.workflow.name}}",
+            "Node": "={{ $json.execution.lastNodeExecuted }}",
+            "Error": "={{$json.execution.error.message}}",
+            "Execution ID": "={{$json.execution.id}}",
+            "Status": "Failed"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Workflow",
+              "displayName": "Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Node",
+              "displayName": "Node",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Execution ID",
+              "displayName": "Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b5fa1ca2-5a73-406a-a746-f19417109292",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GAtANcTVCO7cSj6A",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Error Trigger": [
+      {
+        "json": {
+          "execution": {
+            "id": "257",
+            "url": "https://shamkaka.app.n8n.cloud/workflow/qHyXn51Kimrh9uMd/executions/257",
+            "error": {
+              "level": "warning",
+              "shouldReport": true,
+              "tags": {
+                "reWrapped": true
+              },
+              "timestamp": 1784826404237,
+              "context": {
+                "itemIndex": 0
+              },
+              "functionality": "regular",
+              "name": "NodeOperationError",
+              "node": {
+                "parameters": {
+                  "authentication": "oAuth2",
+                  "resource": "message",
+                  "operation": "send",
+                  "sendTo": "ahtishamdaula4@gmail.com",
+                  "subject": "=🏠 New Property Inquiry Received | {{ $json['Lead ID'] }}",
+                  "emailType": "html",
+                  "message": "=Hello Team,  A new property inquiry has been received.  Lead ID: {{ $json['Lead ID'] }}  Name: {{$json[\"Full Name\"] || $json.fullName}}  Phone: {{$json[\"Phone\"] || $json.phone}}  Email: {{$json[\"Email\"] || $json.email}}  Property Interest: {{$json[\"Property Interest\"] || $json.propertyInterest}}  Preferred Location: {{$json[\"Preferred Location\"] || $json.preferredLocation}}  Budget: PKR {{$json[\"Budget\"] || $json.budget}}  Source: {{$json[\"Source\"] || $json.source}}  Please contact the client as soon as possible. ",
+                  "options": {
+                    "appendAttribution": true
+                  }
+                },
+                "type": "n8n-nodes-base.gmail",
+                "typeVersion": 2.2,
+                "position": [
+                  1728,
+                  80
+                ],
+                "id": "ccffd385-b099-47cd-bf48-efa23b2d4863",
+                "name": "Send a message",
+                "webhookId": "ad491d0d-d110-4f63-9b93-275cb0157b00",
+                "credentials": {
+                  "gmailOAuth2": {
+                    "id": "h3apvIUUKMpuDWfn",
+                    "name": "Gmail account"
+                  }
+                }
+              },
+              "messages": [
+                "Credential with ID \"h3apvIUUKMpuDWfn\" does not exist for type \"gmailOAuth2\"."
+              ],
+              "message": "Credential with ID \"h3apvIUUKMpuDWfn\" does not exist for type \"gmailOAuth2\". (item 0)",
+              "stack": "NodeOperationError: Credential with ID \"h3apvIUUKMpuDWfn\" does not exist for type \"gmailOAuth2\". (item 0)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@opentelemetry+api@1.9.0_@opentelemetry+exporte_9e31dcec10980323a9c957753d2416c7/node_modules/n8n-nodes-base/nodes/Google/Gmail/v2/GmailV2.node.ts:826:11)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_56f5a5be5f9a76dfbcdc404d6ec4dea5/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1080:8)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_56f5a5be5f9a76dfbcdc404d6ec4dea5/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1380:11)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_56f5a5be5f9a76dfbcdc404d6ec4dea5/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1842:27\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_56f5a5be5f9a76dfbcdc404d6ec4dea5/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2534:11"
+            },
+            "lastNodeExecuted": "Send a message",
+            "mode": "webhook",
+            "executionContext": {
+              "version": 1,
+              "establishedAt": 1784826399499,
+              "source": "webhook",
+              "triggerNode": {
+                "name": "Webhook",
+                "type": "n8n-nodes-base.webhook"
+              },
+              "redaction": {
+                "version": 2,
+                "production": false,
+                "manual": false,
+                "source": "workflow"
+              }
+            }
+          },
+          "workflow": {
+            "id": "qHyXn51Kimrh9uMd",
+            "name": "Inquiry Capture & Routing"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b552bb9f-dc45-4b9a-8af6-468533f1f74e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d4c7eea198e954a4138e649ad3b4890c87cd1d28184b1ba0a46e6e876240eca"
+  },
+  "nodeGroups": [],
+  "id": "a1GJQDpsDMRKpYfR",
+  "tags": []
+}

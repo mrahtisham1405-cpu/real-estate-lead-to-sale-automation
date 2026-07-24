@@ -1,0 +1,1135 @@
+{
+  "name": "Inquiry Capture & Routing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "leadcapture",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "edebf4c5-481b-4d6f-9c41-845189a79d26",
+      "name": "Webhook",
+      "webhookId": "83a01f1b-ca1e-49d5-8224-f3342cfa251d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "14727252-115a-48d0-9525-5a7b430dc77d",
+              "name": "fullName",
+              "value": "={{$json.body.fullName}}",
+              "type": "string"
+            },
+            {
+              "id": "cc8ff0ff-205b-4746-9870-7643ef45b0c8",
+              "name": "phone",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "eae087d3-334a-40cd-9bc8-2a3961f72d6b",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "b609869f-ec90-4194-9078-d19a642d5794",
+              "name": "propertyInterest",
+              "value": "={{ $json.body.propertyInterest }}",
+              "type": "string"
+            },
+            {
+              "id": "4f846d13-af3a-4839-a878-b070655c7c2f",
+              "name": "preferredLocation",
+              "value": "={{ $json.body.preferredLocation }}",
+              "type": "string"
+            },
+            {
+              "id": "3bb3b15d-2bea-48cd-863c-ef26fde83ba7",
+              "name": "budget",
+              "value": "={{ $json.body.budget }}",
+              "type": "string"
+            },
+            {
+              "id": "e0bbc018-510c-44e7-95e8-52f13c2110e2",
+              "name": "message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "0c41db43-cb4f-45ec-ae9d-ec042b8d5c77",
+              "name": "source",
+              "value": "={{ $json.body.source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "246a9048-5c4b-463f-bfea-06cdf555ea9a",
+      "name": "Clean Lead Data"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Full Name\nitem.json.fullName = (item.json.fullName || \"\").trim();\n\n// Phone Number Standardization\nlet phone = (item.json.phone || \"\").toString().replace(/\\D/g, \"\");\n\nif (phone.startsWith(\"0\")) {\n  phone = \"92\" + phone.slice(1);\n} else if (phone.length === 10) {\n  phone = \"92\" + phone;\n}\n\nitem.json.phone = phone;\n\n// Email\nitem.json.email = (item.json.email || \"\").trim().toLowerCase();\n\n// Property Details\nitem.json.propertyInterest = (item.json.propertyInterest || \"\").trim();\nitem.json.preferredLocation = (item.json.preferredLocation || \"\").trim();\n\n// Budget\nitem.json.budget = Number(item.json.budget) || 0;\n\n// Message\nitem.json.message = (item.json.message || \"\").trim();\n\n// Source\nitem.json.source = (item.json.source || \"Website\").trim();\n\n// Status\nitem.json.status = \"New\";\n\n// Timestamps\nconst now = new Date().toISOString();\nitem.json.createdAt = item.json.createdAt || now;\nitem.json.updatedAt = now;\n\n// Return Item\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "a7c111c4-bbbb-423a-83ce-dc76cc9b93df",
+      "name": "Standardize Lead Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "98ca000a-0b67-482d-bb5c-6730b403c733",
+              "leftValue": "={{$json.phone}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "20344daa-579e-4534-9226-0bf2355c3f71",
+              "leftValue": "={{ $json.fullName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "a32aba3d-797f-469f-98eb-5529753a887e",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        0
+      ],
+      "id": "26c6ad48-b5ce-4b20-ac07-f35f66fb2297",
+      "name": "Validate Lead"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"message\": \"Invalid lead data. Please check the required fields.\",\n  \"timestamp\": \"={{$now}}\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1056,
+        192
+      ],
+      "id": "81038e54-c1c3-4d6b-97ec-a98b9871cf6b",
+      "name": "Invalid Lead Response"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI",
+          "mode": "list",
+          "cachedResultName": "Real Estate CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Phone",
+              "lookupValue": "={{ $json.phone }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        -16
+      ],
+      "id": "43219f46-b1c5-4214-ad54-ebc7c6dc20a9",
+      "name": "Check Existing Lead",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GAtANcTVCO7cSj6A",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "200c1f05-8c5b-4437-b406-0d173030bb55",
+              "leftValue": "={{ $json.Phone }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1280,
+        -16
+      ],
+      "id": "8f3e0cfb-dc7c-4e6f-911b-b539bf703f73",
+      "name": "Duplicate Lead?"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const now = new Date();\nconst date = now.toISOString().slice(0,10).replace(/-/g,'');\n\nconst random = Math.random()\n  .toString(36)\n  .substring(2,8)\n  .toUpperCase();\n\nitem.json.leadId = `REA-${date}-${random}`;\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        80
+      ],
+      "id": "cbfe3d9a-5cd2-48db-810e-616f90894977",
+      "name": "Generate Lead ID"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI",
+          "mode": "list",
+          "cachedResultName": "Real Estate CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('Validate Lead').item.json.fullName }}",
+            "Phone": "={{ $('Validate Lead').item.json.phone }}",
+            "Email": "={{ $('Validate Lead').item.json.email }}",
+            "Property Interest": "={{ $('Validate Lead').item.json.propertyInterest }}",
+            "Budget": "={{ $('Validate Lead').item.json.budget }}",
+            "Source": "={{ $('Validate Lead').item.json.source }}",
+            "Status": "={{ $('Validate Lead').item.json.status }}",
+            "Created At": "={{ $('Validate Lead').item.json.createdAt }}",
+            "Lead ID": "={{ $json.leadId }}",
+            "Notes": "=",
+            "preferredLocation": "={{ $('Validate Lead').item.json.preferredLocation }}",
+            "message": "={{ $('Validate Lead').item.json.message }}",
+            "Lead Score": "={{ $('Validate Lead').item.json.leadScore }}",
+            "Inquiry Count": "={{ $('Validate Lead').item.json.inquiryCount }}",
+            "Lead Priority": "={{ $('Validate Lead').item.json.leadPriority }}",
+            "Activity Log": "={{ $('Validate Lead').item.json.activityLog }}",
+            "Preferred Location": "={{ $('Validate Lead').item.json.preferredLocation }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Lead ID",
+              "displayName": "Lead ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "preferredLocation",
+              "displayName": "preferredLocation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Property Interest",
+              "displayName": "Property Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Inquiry Count",
+              "displayName": "Inquiry Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Priority",
+              "displayName": "Lead Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Activity Log",
+              "displayName": "Activity Log",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Preferred Location",
+              "displayName": "Preferred Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Updated At",
+              "displayName": "Updated At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1936,
+        80
+      ],
+      "id": "cea0e798-0b3f-41b4-97a1-956f341516a2",
+      "name": "Create New Lead Record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GAtANcTVCO7cSj6A",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI",
+          "mode": "list",
+          "cachedResultName": "Real Estate CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HeA4iNDyrLi9cfd7eIbLgZePJgaafVpVamfn2oOd0AI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Notes": "=Duplicate inquiry received from {{ $json.Source }}",
+            "Updated At": "={{$now}}",
+            "Status": "Contacted",
+            "Phone": "={{ $json.Phone }}",
+            "Preferred Location": "={{ $('Validate Lead').item.json.preferredLocation }}",
+            "Lead Priority": "={{ $('Validate Lead').item.json.leadPriority }}",
+            "Lead Score": "={{ $('Validate Lead').item.json.leadScore }}",
+            "Inquiry Count": "={{ $json['Inquiry Count'] }}",
+            "Activity Log": "={{ $('Validate Lead').item.json.activityLog }}"
+          },
+          "matchingColumns": [
+            "Phone"
+          ],
+          "schema": [
+            {
+              "id": "Lead ID",
+              "displayName": "Lead ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "preferredLocation",
+              "displayName": "preferredLocation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Property Interest",
+              "displayName": "Property Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Inquiry Count",
+              "displayName": "Inquiry Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Priority",
+              "displayName": "Lead Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Activity Log",
+              "displayName": "Activity Log",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Preferred Location",
+              "displayName": "Preferred Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Updated At",
+              "displayName": "Updated At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1744,
+        -128
+      ],
+      "id": "0558ec7e-573d-4734-831b-de1250fdb577",
+      "name": "Update Existing Lead",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GAtANcTVCO7cSj6A",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ahtishamdaula4@gmail.com",
+        "subject": "=🏠 New Property Inquiry Received | {{ $json['Lead ID'] }}",
+        "message": "=Hello Team,  A new property inquiry has been received.  Lead ID: {{ $json['Lead ID'] }}  Name: {{$json[\"Full Name\"] || $json.fullName}}  Phone: {{$json[\"Phone\"] || $json.phone}}  Email: {{$json[\"Email\"] || $json.email}}  Property Interest: {{$json[\"Property Interest\"] || $json.propertyInterest}}  Preferred Location: {{$json[\"Preferred Location\"] || $json.preferredLocation}}  Budget: PKR {{$json[\"Budget\"] || $json.budget}}  Source: {{$json[\"Source\"] || $json.source}}  Please contact the client as soon as possible. ",
+        "options": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        80
+      ],
+      "id": "ccffd385-b099-47cd-bf48-efa23b2d4863",
+      "name": "Send New Lead Notification",
+      "webhookId": "ad491d0d-d110-4f63-9b93-275cb0157b00",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lihRA1u7KhvB5GFM",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ahtishamdaula4@gmail.com",
+        "subject": "=🔄 Existing Lead Updated -{{ $('Duplicate Lead?').item.json['Full Name'] }}",
+        "message": "=Hello Team,\n\nAn existing lead has submitted another inquiry.\n\nLead Name:\n{{ $('Duplicate Lead?').item.json['Full Name'] }}\n\nPhone:\n{{$json[\"Phone\"] || $json.phone}}\n\nProperty:\n{{ $('Duplicate Lead?').item.json['Property Interest'] }}\n\nBudget:\nPKR {{ $('Duplicate Lead?').item.json.Budget }}\n\nSource:\n{{ $('Duplicate Lead?').item.json.Source }}\n\nThe existing CRM record has already been updated.\n\nPlease follow up with the client.",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1984,
+        -128
+      ],
+      "id": "259ce1dd-6d1d-460e-b37b-6964974d5f2d",
+      "name": "Send Duplicate Lead Notification",
+      "webhookId": "ad491d0d-d110-4f63-9b93-275cb0157b00",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lihRA1u7KhvB5GFM",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Lead updated successfully.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2240,
+        -128
+      ],
+      "id": "62919438-21b6-44ab-97f8-f90e80d08e62",
+      "name": "Return Validation Error"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Lead submitted successfully.\",\n  \"leadId\": \"{{$json['Lead ID']}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2352,
+        80
+      ],
+      "id": "69ad4d92-f4ec-47c8-a56d-a20305bbca3f",
+      "name": "Return API Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1757847-9a1d-4c3e-80c1-12df994a96a9",
+              "name": "leadScore",
+              "value": "={{    $json.budget >= 20000000      ? \"High\"      : $json.budget >= 10000000        ? \"Medium\"        : \"Low\"  }}",
+              "type": "string"
+            },
+            {
+              "id": "b5de1784-dba9-4053-abc7-9e376b039a98",
+              "name": "leadPriority",
+              "value": "={{    $json.budget >= 20000000      ? 3      : $json.budget >= 10000000        ? 2        : 1  }}",
+              "type": "number"
+            },
+            {
+              "id": "14a82e7b-c0b2-440e-9886-9a84b5127236",
+              "name": "assignedAgent",
+              "value": "={{ $json.preferredLocation === \"DHA Phase 1\" ? \"Ali Khan\" : $json.preferredLocation === \"DHA Phase 2\" ? \"Ali Khan\" : $json.preferredLocation === \"Bahria Town\" ? \"Ahmed Raza\" : $json.preferredLocation === \"Johar Town\" ? \"Sara Ahmed\" : $json.preferredLocation === \"Gulberg\" ? \"Usman Malik\" : \"Admin Team\" }}",
+              "type": "string"
+            },
+            {
+              "id": "0f37ae69-df4a-4ac3-9acf-61611e4088fe",
+              "name": "inquiryCount",
+              "value": 1,
+              "type": "number"
+            },
+            {
+              "id": "c743dec5-a654-4b7f-943a-891c7695d2dc",
+              "name": "activityLog",
+              "value": "={{ `${$now.toFormat(\"yyyy-MM-dd HH:mm:ss\")}  Lead Created via ${$json.source}` }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "5c718447-4096-4167-91e4-778923d72f36",
+      "name": "Process Lead Data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "710038de-ec76-43c4-b4c4-05e421873d46",
+              "name": "Inquiry Count",
+              "value": "={{ Number($json[\"Inquiry Count\"] || 0) + 1 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1520,
+        -128
+      ],
+      "id": "4ec3a6ea-b12e-4c38-bce7-ac567af28823",
+      "name": "Increment Inquiry Count"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "shamkaka.app.n8n.cloud",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+            "content-length": "196",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "en-US,en;q=0.9",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "110.38.201.255",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "PK",
+            "cf-ray": "a20053e9599409ed-HKG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "origin": "https://id-preview--059a6886-6cc7-4833-b9b0-fded2ad7a103.lovable.app",
+            "priority": "u=1, i",
+            "referer": "https://id-preview--059a6886-6cc7-4833-b9b0-fded2ad7a103.lovable.app/",
+            "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "110.38.201.255, 172.68.211.21",
+            "x-forwarded-host": "shamkaka.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-swc-10-55d65d8b5-hhlk9",
+            "x-is-trusted": "yes",
+            "x-real-ip": "110.38.201.255"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "fullName": "Osman Jalil",
+            "phone": "92324564344",
+            "email": "isman@gmail.com",
+            "propertyInterest": "Apartment",
+            "preferredLocation": "DHA Phase 1",
+            "budget": "10000000",
+            "message": "hello",
+            "source": "Website"
+          },
+          "webhookUrl": "https://shamkaka.app.n8n.cloud/webhook/leadcapture",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Clean Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Standardize Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standardize Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Process Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Lead": {
+      "main": [
+        [
+          {
+            "node": "Check Existing Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid Lead Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing Lead": {
+      "main": [
+        [
+          {
+            "node": "Duplicate Lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duplicate Lead?": {
+      "main": [
+        [
+          {
+            "node": "Increment Inquiry Count",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Lead ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Lead ID": {
+      "main": [
+        [
+          {
+            "node": "Create New Lead Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create New Lead Record": {
+      "main": [
+        [
+          {
+            "node": "Send New Lead Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Existing Lead": {
+      "main": [
+        [
+          {
+            "node": "Send Duplicate Lead Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send New Lead Notification": {
+      "main": [
+        [
+          {
+            "node": "Return API Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Duplicate Lead Notification": {
+      "main": [
+        [
+          {
+            "node": "Return Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Validate Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Inquiry Count": {
+      "main": [
+        [
+          {
+            "node": "Update Existing Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "a1GJQDpsDMRKpYfR",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "580b2701-489c-4234-80c2-37872db779da",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d4c7eea198e954a4138e649ad3b4890c87cd1d28184b1ba0a46e6e876240eca"
+  },
+  "nodeGroups": [],
+  "id": "qHyXn51Kimrh9uMd",
+  "tags": []
+}
