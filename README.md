@@ -215,21 +215,18 @@ Webhook
 # 📷 Project Screenshots
 
 ```
-01_Website_Form.png
+01_lovable.png
 
-02_Main_Workflow.png
+02_lead.png
 
-03_CRM_Database.png
+03_error handle.png
 
-04_New_Lead.png
+04_excel crm.png
 
-05_Duplicate_Lead.png
+05_excel error handle.png
 
-06_Email_Notification.png
+06_gmail.png
 
-07_Error_Workflow.png
-
-08_Automation_Logs.png
 ```
 
 ---
@@ -295,19 +292,6 @@ A dedicated Error Workflow automatically:
 7. Test using sample inquiries.
 
 ---
-
-# 📁 Repository Structure
-
-```
-Real-Estate-Lead-to-Sale-Automation/
-
-├── Workflows/
-├── Documentation/
-├── Screenshots/
-├── Assets/
-├── Demo/
-└── README.md
-```
 
 ---
 
